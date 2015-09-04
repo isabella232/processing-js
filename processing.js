@@ -1387,6 +1387,74 @@
     processingInstances.push(processing);
   };
 
+  ////////////////////////////////////////////////////////////////////////////
+  // LRUCache.JS START
+  ////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * A cache which has a limited size and removes the lease recently used
+   * items when that size is reached.
+   */
+  function LRUCache(maxSize) {
+    this.maxSize = maxSize || 100;
+    this.size = 0;
+    this.cache = {}; // key => val
+    this.useIndex = {}; // use index => key
+    this.useReverse = {}; // key => use index
+    this.mostRecent = -1;
+    this.leastRecent = -1;
+  }
+
+  /**
+   * Set a value in the cache. If the max size is reached, the least recently
+   * used item will be popped off.
+   */
+  LRUCache.prototype.set = function(key, val) {
+    key = key + '';
+    this.size += 1;
+    this.cache[key] = val;
+    this._makeMostRecent(key);
+
+    if (this.size > this.maxSize) {
+      this._pop();
+    }
+  };
+
+  /**
+   * Get a value from the cache, returning undefined for an unknown key
+   */
+  LRUCache.prototype.get = function(key) {
+    key = key + '';
+    if (!this.cache[key]) {
+      return;
+    }
+    delete this.useIndex[this.useReverse[key]];
+
+    this._makeMostRecent(key);
+    return this.cache[key];
+  };
+
+  LRUCache.prototype._makeMostRecent = function (key) {
+    this.mostRecent += 1;
+    var newIndex = this.mostRecent;
+    this.useIndex[newIndex] = key;
+    this.useReverse[key] = newIndex;
+  }
+
+  LRUCache.prototype._pop = function () {
+    while (this.leastRecent < this.mostRecent) {
+      var oldKey = this.useIndex[this.leastRecent];
+      if (oldKey) {
+        delete this.useIndex[this.leastRecent];
+        delete this.useReverse[oldKey];
+        delete this.cache[oldKey];
+        this.leastRecent += 1;
+        this.size -= 1;
+        return;
+      }
+      this.leastRecent += 1;
+    }
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   // PFONT.JS START
@@ -1561,7 +1629,7 @@
   /**
   * Global "loaded fonts" list, internal to PFont
   */
-  PFont.PFontCache = {};
+  PFont.PFontCache = new LRUCache(100);
 
   /**
   * This function acts as single access point for getting and caching
@@ -1570,11 +1638,15 @@
   PFont.get = function(fontName, fontSize) {
     var cache = PFont.PFontCache;
     var idx = fontName+"/"+fontSize;
-    if (!cache[idx]) {
-      cache[idx] = new PFont(fontName, fontSize);
+    var val = cache.get(idx);
+    if (!val) {
+      val = new PFont(fontName, fontSize);
+      cache.set(idx, val);
     }
-    return cache[idx];
+    return val;
   };
+
+
 
   /**
   * Lists all standard fonts. Due to browser limitations, this list is
