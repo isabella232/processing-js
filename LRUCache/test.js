@@ -4,11 +4,11 @@ var LRUCache = require('./LRUCache');
 
 describe('Cache', () => {
   it('should initialize', () => {
-    var cache = new LRUCache();
+    var cache = new LRUCache(10);
   });
 
   it('should add an item', () => {
-    var cache = new LRUCache();
+    var cache = new LRUCache(10);
     cache.set('one', 20);
     expect(cache.get('one')).to.equal(20);
     expect(cache.size).to.equal(1);

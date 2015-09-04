@@ -1405,7 +1405,7 @@
   */
 
   function LRUCache(maxSize) {
-    this.maxSize = maxSize || 100;
+    this.maxSize = maxSize;
     this.size = 0;
     this.cache = {}; // key => val
     this.useIndex = {}; // use index => key
