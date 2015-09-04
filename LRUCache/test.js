@@ -53,5 +53,17 @@ describe('Cache', () => {
     }
     expect(cache.get(42)).to.equal('num42');
   });
+
+  it('overwriting a key should not pop anything', () => {
+    var cache = new LRUCache(5);
+    for (var i=0; i<5; i++) {
+      cache.set(i, 'num' + i);
+    }
+    cache.set(0, 'num0');
+    cache.set(0, 'num0');
+    for (var i=0; i<5; i++) {
+      expect(cache.get(i)).to.equal('num' + i);
+    }
+  });
 });
 

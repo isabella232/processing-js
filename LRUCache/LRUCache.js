@@ -17,7 +17,9 @@ function LRUCache(maxSize) {
   this.cache = {}; // key => val
   this.useIndex = {}; // use index => key
   this.useReverse = {}; // key => use index
-  this.mostRecent = 0;
+  // this will be incremented to 0 for the first item added, making
+  // leastRecent === mostRecent
+  this.mostRecent = -1;
   this.leastRecent = 0;
 }
 
@@ -39,7 +41,9 @@ LRUCache.prototype.get = function(key) {
   */
 LRUCache.prototype.set = function(key, val) {
   key = key + '';
-  this.size += 1;
+  if (!this.cache[key]) {
+    this.size += 1;
+  }
   this.cache[key] = val;
   this._makeMostRecent(key);
 
@@ -65,15 +69,17 @@ LRUCache.prototype._makeMostRecent = function (key) {
 LRUCache.prototype._pop = function () {
   while (this.leastRecent < this.mostRecent) {
     var oldKey = this.useIndex[this.leastRecent];
-    if (oldKey) {
-      delete this.useIndex[this.leastRecent];
-      delete this.useReverse[oldKey];
-      delete this.cache[oldKey];
+    if (!oldKey) {
       this.leastRecent += 1;
-      this.size -= 1;
-      return;
+      continue;
     }
+
+    delete this.useIndex[this.leastRecent];
+    delete this.useReverse[oldKey];
+    delete this.cache[oldKey];
     this.leastRecent += 1;
+    this.size -= 1;
+    return;
   }
 }
 
